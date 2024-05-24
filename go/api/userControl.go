@@ -1,17 +1,10 @@
 package api
 
 import (
-	"code-go/app/admin/dao"
-	"code-go/global"
-	"code-go/util"
-	"fmt"
 	"net/http"
-	"packagestudy/common"
 	"packagestudy/core"
-	"packagestudy/do"
-	"packagestudy/vo"
-	"strconv"
-	"time"
+	"packagestudy/dao"
+	"packagestudy/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +23,7 @@ func Register(c *gin.Context) {
 	mobile := c.Query("mobile")
 	if userName == "" || password == "" {
 		core.LOG.Println("输入的用户名和密码为空")
-		c.JSON(http.StatusOK, common.FailWithCodeMsg(common.VALILD_FAIL, "输入的用户名或密码为空"))
+		c.JSON(http.StatusOK, gin.H{"message": "输入的用户名和密码为空"})
 		return
 	}
 
@@ -38,28 +31,29 @@ func Register(c *gin.Context) {
 	daoUser := dao.GetUserByUsername(userName)
 	if daoUser.Username == userName {
 		core.LOG.Printf("用户: %s 已存在\n", userName)
-		c.JSON(http.StatusOK, common.OkWithData("输入的用户已存在"))
+		c.JSON(http.StatusOK, gin.H{"message": "输入的用户已存在"})
 		return
 	}
 
 	// 生成用户
-	genPasswd := util.GenPasswd(password)
-	var user do.User
+	genPasswd := password
+	var user model.User
 	user.Mobile = mobile
 	user.Username = userName
 	user.Password = genPasswd
-	user.Status = core.User_status_OK
+	user.Status = 1
 
 	err := dao.InsertUser(user)
 	if err != nil {
 		core.LOG.Println("插入用户失败 ", err)
-		c.JSON(http.StatusOK, common.FailWithCodeMsg(common.INSERT_DB_FAIL, "插入用户失败"))
+		c.JSON(http.StatusOK, "插入用户失败")
 		return
 	}
-	c.JSON(http.StatusOK, common.Ok())
+	c.JSON(http.StatusOK, 200)
 
 }
 
+/*
 // Login 用户登录
 //
 //	@Summary	用户登录
@@ -177,3 +171,4 @@ func GetAllUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, common.OkWithData(common.NewPageRes(users, total)))
 }
+*/
